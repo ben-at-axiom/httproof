@@ -1,0 +1,359 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:HTTProof.ViewModels"
+        xmlns:m="using:HTTProof.Models"
+        xmlns:v="using:HTTProof.Views"
+        xmlns:ae="using:AvaloniaEdit"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="720"
+        x:Class="HTTProof.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Width="1200" Height="720"
+        MinWidth="900" MinHeight="500"
+        RequestedThemeVariant="Dark"
+        Background="{DynamicResource BgAppBrush}"
+        Icon="/Assets/app.ico"
+        Title="HTTProof">
+
+    <Design.DataContext>
+        <vm:MainViewModel />
+    </Design.DataContext>
+
+    <Window.Styles>
+        <Style Selector="TextBox">
+            <Setter Property="FontFamily" Value="Inter, Segoe UI" />
+        </Style>
+        <Style Selector="TextBlock.mono">
+            <Setter Property="FontFamily" Value="Consolas, Cascadia Mono, JetBrains Mono, Menlo, monospace" />
+        </Style>
+        <Style Selector="TextBox.mono">
+            <Setter Property="FontFamily" Value="Consolas, Cascadia Mono, JetBrains Mono, Menlo, monospace" />
+        </Style>
+        <Style Selector="ae|TextEditor">
+            <Setter Property="FontFamily" Value="Consolas, Cascadia Mono, JetBrains Mono, Menlo, monospace" />
+        </Style>
+
+        <Style Selector="Border.card">
+            <Setter Property="Background" Value="{DynamicResource BgPanelBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="6" />
+        </Style>
+
+        <Style Selector="TextBox">
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="{DynamicResource BgPanel2Brush}" />
+        </Style>
+        <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+        <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+
+        <Style Selector="ComboBox">
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="{DynamicResource BgPanel2Brush}" />
+        </Style>
+        <Style Selector="ComboBox:focus /template/ Border#Background">
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+        <Style Selector="ComboBox:pointerover /template/ Border#Background">
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+
+        <Style Selector="Button">
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+
+        <Style Selector="Border.badge">
+            <Setter Property="Padding" Value="8,3" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Border.badge > TextBlock">
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+        <Style Selector="Border.badge.ok">         <Setter Property="Background" Value="#2E7D32" /></Style>
+        <Style Selector="Border.badge.redir">      <Setter Property="Background" Value="#0288D1" /></Style>
+        <Style Selector="Border.badge.client-err"> <Setter Property="Background" Value="#EF6C00" /></Style>
+        <Style Selector="Border.badge.server-err"> <Setter Property="Background" Value="#C62828" /></Style>
+        <Style Selector="Border.badge.error">      <Setter Property="Background" Value="#B71C1C" /></Style>
+        <Style Selector="Border.badge.neutral">    <Setter Property="Background" Value="#455A64" /></Style>
+
+        <Style Selector="Button.send">
+            <Setter Property="Background" Value="#3D63DD" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Padding" Value="18,7" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Button.send:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#4E74E8" />
+        </Style>
+        <Style Selector="Button.send:disabled /template/ ContentPresenter">
+            <Setter Property="Background" Value="#2A3757" />
+            <Setter Property="Foreground" Value="#8FA0BB" />
+        </Style>
+
+        <Style Selector="Button.ghost">
+            <Setter Property="Background" Value="{DynamicResource BgPanel2Brush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="CornerRadius" Value="4" />
+        </Style>
+
+        <Style Selector="TabControl">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid RowDefinitions="Auto,*" RowSpacing="8">
+                        <ItemsPresenter Grid.Row="0" Name="PART_ItemsPresenter">
+                            <ItemsPresenter.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsPresenter.ItemsPanel>
+                        </ItemsPresenter>
+                        <ContentPresenter Grid.Row="1"
+                                          Name="PART_SelectedContentHost"
+                                          Content="{TemplateBinding SelectedContent}"
+                                          ContentTemplate="{TemplateBinding SelectedContentTemplate}" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="TabItem">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Padding" Value="14,6" />
+            <Setter Property="MinHeight" Value="30" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Margin" Value="0,0,4,0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Name="TabRoot"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter Name="PART_ContentPresenter"
+                                          Content="{TemplateBinding Header}"
+                                          ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          TextBlock.Foreground="{TemplateBinding Foreground}" />
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="TabItem:pointerover">
+            <Setter Property="Background" Value="{DynamicResource BgTabHoverBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextStrongBrush}" />
+        </Style>
+        <Style Selector="TabItem:selected">
+            <Setter Property="Background" Value="{DynamicResource BgTabActiveBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextStrongBrush}" />
+        </Style>
+        <Style Selector="TabItem:selected:pointerover">
+            <Setter Property="Background" Value="{DynamicResource BgTabActiveBrush}" />
+        </Style>
+    </Window.Styles>
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="BgAppBrush"    Color="#0F1116" />
+        <SolidColorBrush x:Key="BgPanelBrush"  Color="#171A21" />
+        <SolidColorBrush x:Key="BgPanel2Brush" Color="#1D2129" />
+        <SolidColorBrush x:Key="BgTabHoverBrush"  Color="#262B36" />
+        <SolidColorBrush x:Key="BgTabActiveBrush" Color="#3A4256" />
+        <SolidColorBrush x:Key="BorderBrush2"  Color="#2A2F3A" />
+        <SolidColorBrush x:Key="TextMutedBrush" Color="#8A93A6" />
+        <SolidColorBrush x:Key="TextStrongBrush" Color="#E6EAF2" />
+    </Window.Resources>
+
+    <Grid RowDefinitions="Auto,*" Margin="12">
+        <!-- top request bar -->
+        <Border Grid.Row="0" Classes="card" Padding="10">
+            <Grid ColumnDefinitions="120,*,Auto,Auto" ColumnSpacing="10">
+                <ComboBox Grid.Column="0"
+                          ItemsSource="{Binding MethodOptions}"
+                          SelectedItem="{Binding Method}"
+                          HorizontalAlignment="Stretch"
+                          MinHeight="34" />
+                <Border Grid.Column="1"
+                        Background="{DynamicResource BgPanel2Brush}"
+                        CornerRadius="4"
+                        MinHeight="34"
+                        Padding="8,0">
+                    <ae:TextEditor Name="UrlEditor"
+                                   AttachedToVisualTree="OnUrlEditorAttached"
+                                   ShowLineNumbers="False"
+                                   HorizontalScrollBarVisibility="Hidden"
+                                   VerticalScrollBarVisibility="Hidden"
+                                   WordWrap="False"
+                                   FontSize="14"
+                                   VerticalAlignment="Center"
+                                   Background="Transparent"
+                                   Foreground="{DynamicResource TextStrongBrush}" />
+                </Border>
+                <Button Grid.Column="2"
+                        Content="Cancel"
+                        Classes="ghost"
+                        Command="{Binding CancelCommand}"
+                        IsVisible="{Binding IsBusy}" />
+                <Button Grid.Column="3"
+                        Content="Send"
+                        Classes="send"
+                        Command="{Binding SendCommand}" />
+            </Grid>
+        </Border>
+
+        <!-- body: request tabs | response -->
+        <Grid Grid.Row="1" Margin="0,12,0,0" ColumnDefinitions="*,6,*">
+            <!-- request tabs -->
+            <Border Grid.Column="0" Classes="card" Padding="8">
+                <TabControl SelectedIndex="3">
+                    <TabItem Header="Params">
+                        <v:KeyValueEditor DataContext="{Binding Params}" />
+                    </TabItem>
+                    <TabItem Header="Headers">
+                        <v:KeyValueEditor DataContext="{Binding Headers}" />
+                    </TabItem>
+                    <TabItem Header="Auth">
+                        <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="12">
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10">
+                                <TextBlock Text="Type" VerticalAlignment="Center" Width="60" Foreground="{DynamicResource TextMutedBrush}" />
+                                <ComboBox ItemsSource="{Binding AuthKindOptions}"
+                                          SelectedItem="{Binding Auth}"
+                                          MinWidth="160" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10"
+                                        IsVisible="{Binding Auth, Converter={x:Static v:EqualityConverters.IsBasic}}">
+                                <TextBlock Text="User" VerticalAlignment="Center" Width="60" Foreground="{DynamicResource TextMutedBrush}" />
+                                <TextBox Text="{Binding AuthUser}" Width="300" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="10"
+                                        IsVisible="{Binding Auth, Converter={x:Static v:EqualityConverters.NotNone}}">
+                                <TextBlock VerticalAlignment="Center" Width="60" Foreground="{DynamicResource TextMutedBrush}"
+                                           Text="{Binding Auth, Converter={x:Static v:AuthSecretLabelConverter.Instance}}" />
+                                <TextBox Text="{Binding AuthSecret}" Width="480" PasswordChar="•" />
+                            </StackPanel>
+                        </Grid>
+                    </TabItem>
+                    <TabItem Header="Body">
+                        <Grid RowDefinitions="Auto,*" RowSpacing="10">
+                            <ComboBox Grid.Row="0"
+                                      ItemsSource="{Binding BodyKindOptions}"
+                                      SelectedItem="{Binding Body}"
+                                      MinWidth="140"
+                                      HorizontalAlignment="Left">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate DataType="m:BodyKind">
+                                        <TextBlock Text="{Binding Converter={x:Static v:BodyKindDisplayConverter.Instance}}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <Border Grid.Row="1" Classes="card"
+                                    Background="{DynamicResource BgPanel2Brush}"
+                                    IsVisible="{Binding Body, Converter={x:Static v:EqualityConverters.BodyNotNone}}">
+                                <ae:TextEditor Name="BodyEditor"
+                                               AttachedToVisualTree="OnBodyEditorAttached"
+                                               ShowLineNumbers="True"
+                                               HorizontalScrollBarVisibility="Auto"
+                                               VerticalScrollBarVisibility="Auto"
+                                               FontSize="14"
+                                               Padding="8"
+                                               Background="Transparent"
+                                               Foreground="{DynamicResource TextStrongBrush}" />
+                            </Border>
+                        </Grid>
+                    </TabItem>
+                </TabControl>
+            </Border>
+
+            <GridSplitter Grid.Column="1" Background="Transparent" />
+
+            <!-- response -->
+            <Border Grid.Column="2" Classes="card">
+                <Grid RowDefinitions="Auto,*">
+                    <!-- response header bar -->
+                    <Border Grid.Row="0" Padding="12,10" Background="{DynamicResource BgPanel2Brush}">
+                        <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto">
+                            <Border Grid.Column="0" Classes="badge"
+                                    Classes.ok="{Binding StatusBadgeClass, Converter={x:Static v:StringMatchConverter.Ok}}"
+                                    Classes.redir="{Binding StatusBadgeClass, Converter={x:Static v:StringMatchConverter.Redir}}"
+                                    Classes.client-err="{Binding StatusBadgeClass, Converter={x:Static v:StringMatchConverter.ClientErr}}"
+                                    Classes.server-err="{Binding StatusBadgeClass, Converter={x:Static v:StringMatchConverter.ServerErr}}"
+                                    Classes.error="{Binding StatusBadgeClass, Converter={x:Static v:StringMatchConverter.Error}}"
+                                    Classes.neutral="{Binding StatusBadgeClass, Converter={x:Static v:StringMatchConverter.Neutral}}"
+                                    IsVisible="{Binding HasResponse}">
+                                <TextBlock>
+                                    <Run Text="{Binding StatusCode, FallbackValue=''}" />
+                                    <Run Text=" " />
+                                    <Run Text="{Binding StatusText}" />
+                                </TextBlock>
+                            </Border>
+                            <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center"
+                                       Foreground="{DynamicResource TextMutedBrush}"
+                                       IsVisible="{Binding DurationMs, Converter={x:Static v:NotNullConverter.Instance}}">
+                                <Run Text="{Binding DurationMs, FallbackValue=''}" /><Run Text=" ms" />
+                            </TextBlock>
+                            <TextBlock Grid.Column="2" Margin="12,0,0,0" VerticalAlignment="Center"
+                                       Foreground="{DynamicResource TextMutedBrush}"
+                                       IsVisible="{Binding ByteLength, Converter={x:Static v:NotNullConverter.Instance}}">
+                                <Run Text="{Binding ByteLength, FallbackValue=''}" /><Run Text=" B" />
+                            </TextBlock>
+                            <TextBlock Grid.Column="3" Margin="12,0,0,0" VerticalAlignment="Center"
+                                       Foreground="{DynamicResource TextMutedBrush}"
+                                       Text="{Binding ResponseContentType}" />
+                            <ProgressBar Grid.Column="4" IsIndeterminate="True"
+                                         Width="120" Height="4"
+                                         IsVisible="{Binding IsBusy}" />
+                        </Grid>
+                    </Border>
+
+                    <!-- response body -->
+                    <Grid Grid.Row="1">
+                        <TextBlock Text="No response yet. Press Send."
+                                   Foreground="{DynamicResource TextMutedBrush}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   IsVisible="{Binding ShowIdlePlaceholder}" />
+
+                        <Border Padding="12" IsVisible="{Binding ErrorMessage, Converter={x:Static v:NotNullConverter.Instance}}">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="Request failed" Foreground="#FF7A7A" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource TextStrongBrush}" TextWrapping="Wrap" Classes="mono" />
+                            </StackPanel>
+                        </Border>
+
+                        <ae:TextEditor Name="ResponseEditor"
+                                       AttachedToVisualTree="OnResponseEditorAttached"
+                                       IsReadOnly="True"
+                                       ShowLineNumbers="True"
+                                       HorizontalScrollBarVisibility="Auto"
+                                       VerticalScrollBarVisibility="Auto"
+                                       FontSize="14"
+                                       Padding="8"
+                                       Background="Transparent"
+                                       Foreground="{DynamicResource TextStrongBrush}"
+                                       IsVisible="{Binding IsTextResponse}" />
+
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                      VerticalScrollBarVisibility="Auto"
+                                      Padding="8"
+                                      IsVisible="{Binding IsImageResponse}">
+                            <Image Source="{Binding ResponseImage}"
+                                   Stretch="None"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Top" />
+                        </ScrollViewer>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

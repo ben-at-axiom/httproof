@@ -1,0 +1,41 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:m="using:HTTProof.Models"
+             xmlns:v="using:HTTProof.Views"
+             x:Class="HTTProof.Views.KeyValueEditor"
+             x:DataType="v:KeyValueEditor">
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="0">
+        <Grid Grid.Row="0" ColumnDefinitions="36,*,*,36" Margin="12,10,12,6">
+            <TextBlock Grid.Column="0" Text="" />
+            <TextBlock Grid.Column="1" Text="Key"   Foreground="{DynamicResource TextMutedBrush}" FontSize="11" />
+            <TextBlock Grid.Column="2" Text="Value" Foreground="{DynamicResource TextMutedBrush}" FontSize="11" Margin="8,0,0,0" />
+            <TextBlock Grid.Column="3" Text="" />
+        </Grid>
+
+        <ScrollViewer Grid.Row="1" Padding="0,0,0,0">
+            <ItemsControl ItemsSource="{Binding Items, RelativeSource={RelativeSource AncestorType=v:KeyValueEditor}}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="m:KeyValueEntry">
+                        <Grid ColumnDefinitions="36,*,*,36" Margin="12,3">
+                            <CheckBox Grid.Column="0" IsChecked="{Binding Enabled}" VerticalAlignment="Center" />
+                            <TextBox Grid.Column="1" Text="{Binding Key}" MinHeight="30" VerticalContentAlignment="Center" />
+                            <TextBox Grid.Column="2" Text="{Binding Value}" MinHeight="30" VerticalContentAlignment="Center" Margin="8,0,0,0" Classes="mono" />
+                            <Button Grid.Column="3" Content="×" FontSize="16" Padding="0" Width="30" Height="30"
+                                    Background="Transparent" BorderThickness="0"
+                                    Foreground="{DynamicResource TextMutedBrush}"
+                                    Click="OnDeleteClicked"
+                                    Tag="{Binding}" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <Button Grid.Row="2" Content="+ Add row"
+                Classes="ghost"
+                HorizontalAlignment="Left"
+                Margin="12,8,12,12"
+                Click="OnAddClicked" />
+    </Grid>
+</UserControl>
