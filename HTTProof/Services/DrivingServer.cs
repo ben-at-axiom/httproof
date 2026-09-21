@@ -109,8 +109,10 @@ public sealed class DrivingServer : IDisposable
 
                 case ("/api/screenshot", "GET"):
                     {
-                        var png = await CaptureScreenshotAsync();
-                        await WriteBytes(ctx, 200, "image/png", png);
+                        var pathQ = req.QueryString["path"];
+                        var (png, err) = await CaptureScreenshotAsync(pathQ);
+                        if (err is not null) { await WriteError(ctx, 400, err); return; }
+                        await WriteBytes(ctx, 200, "image/png", png!);
                         return;
                     }
 
@@ -209,11 +211,19 @@ public sealed class DrivingServer : IDisposable
         ctx.Response.OutputStream.Close();
     }
 
-    private static Task<byte[]> CaptureScreenshotAsync()
+    private Task<(byte[]? Png, string? Error)> CaptureScreenshotAsync(string? path)
         => Dispatcher.UIThread.InvokeAsync(() =>
         {
             var lifetime = Avalonia.Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
-            var window = lifetime?.MainWindow ?? throw new InvalidOperationException("no window");
+            var window = lifetime?.MainWindow as HTTProof.Views.MainWindow
+                ?? throw new InvalidOperationException("no window");
+
+            if (!string.IsNullOrEmpty(path))
+            {
+                var scrollErr = ScrollResponseToPath(window, path);
+                if (scrollErr is not null) return ((byte[]?)null, scrollErr);
+            }
+
             var w = Math.Max(1, (int)Math.Ceiling(window.Bounds.Width));
             var h = Math.Max(1, (int)Math.Ceiling(window.Bounds.Height));
             var bitmap = new RenderTargetBitmap(new PixelSize(w, h), new Vector(96, 96));
@@ -222,10 +232,29 @@ public sealed class DrivingServer : IDisposable
                 bitmap.Render(window);
                 using var ms = new MemoryStream();
                 bitmap.Save(ms, new PngBitmapEncoderOptions());
-                return ms.ToArray();
+                return ((byte[]?)ms.ToArray(), (string?)null);
             }
             finally { bitmap.Dispose(); }
         }).GetTask();
+
+    private string? ScrollResponseToPath(HTTProof.Views.MainWindow window, string path)
+    {
+        if (!_vm.HasResponse)
+            return "cannot scroll to path: no response has been received yet";
+        if (_vm.IsImageResponse)
+            return "cannot scroll to path: response is an image, not text";
+        var body = _vm.ResponseBody ?? "";
+        if (body.Length == 0)
+            return "cannot scroll to path: response body is empty";
+
+        if (!JsonPathLocator.TryParse(path, out var segs, out var err))
+            return "invalid path: " + err;
+        if (!JsonPathLocator.TryLocate(body, segs, out var offset, out err))
+            return err;
+
+        var (line, _) = JsonPathLocator.OffsetToLineCol(body, offset);
+        return window.TryCenterResponseAtLine(line);
+    }
 
     private static async Task<T> UiAsync<T>(Func<T> fn)
         => await Dispatcher.UIThread.InvokeAsync(fn);
@@ -293,8 +322,18 @@ public sealed class DrivingServer : IDisposable
     "/api/screenshot": {
       "get": {
         "summary": "PNG screenshot of the main window",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Optional path into the JSON response body. When supplied, the response pane is scrolled so that the referenced node is vertically centered in the visible area before the screenshot is captured. Three notations are accepted, disambiguated by the first character: JSONPath (leading '$', e.g. `$.data.items[0].id`), JSON Pointer per RFC 6901 (leading '/', e.g. `/data/items/0/id`), or dotted (default, e.g. `data.items[0].id`). If the path is malformed, does not resolve, or the current response is not scrollable JSON text, the request fails with HTTP 400 and no screenshot."
+          }
+        ],
         "responses": {
-          "200": { "description": "PNG bytes", "content": { "image/png": {} } }
+          "200": { "description": "PNG bytes", "content": { "image/png": {} } },
+          "400": { "description": "Path invalid or does not resolve in the current response body", "content": { "application/json": {} } }
         }
       }
     },

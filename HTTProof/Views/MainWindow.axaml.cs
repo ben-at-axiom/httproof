@@ -1,7 +1,9 @@
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media;
 using AvaloniaEdit;
+using AvaloniaEdit.Rendering;
 using AvaloniaEdit.TextMate;
 using HTTProof.Models;
 using HTTProof.ViewModels;
@@ -12,6 +14,7 @@ namespace HTTProof.Views;
 public partial class MainWindow : Window
 {
     private static readonly RegistryOptions Registry = new(ThemeName.DarkPlus);
+    private static readonly IBrush LinkBrush = new SolidColorBrush(Color.Parse("#7B94F0"));
 
     private TextEditor? _bodyEditor;
     private TextEditor? _responseEditor;
@@ -33,6 +36,7 @@ public partial class MainWindow : Window
         if (_bodyEditor is not null) return;
         _bodyEditor = (TextEditor)sender!;
         _bodyTm = _bodyEditor.InstallTextMate(Registry);
+        _bodyEditor.TextArea.TextView.LinkTextForegroundBrush = LinkBrush;
         _bodyEditor.TextChanged += OnBodyEditorTextChanged;
         UpdateBodyGrammar();
         SyncBodyFromVm();
@@ -58,6 +62,7 @@ public partial class MainWindow : Window
         if (_responseEditor is not null) return;
         _responseEditor = (TextEditor)sender!;
         _responseTm = _responseEditor.InstallTextMate(Registry);
+        _responseEditor.TextArea.TextView.LinkTextForegroundBrush = LinkBrush;
         var scope = Registry.GetScopeByLanguageId("json");
         if (!string.IsNullOrEmpty(scope)) _responseTm.SetGrammar(scope);
         SyncResponseFromVm();
@@ -159,5 +164,21 @@ public partial class MainWindow : Window
             _syncingUrl = false;
         }
         _vm.Url = t;
+    }
+
+    public string? TryCenterResponseAtLine(int line)
+    {
+        if (_responseEditor is null) return "response editor is not initialized";
+        var editor = _responseEditor;
+        var doc = editor.Document;
+        if (doc is null) return "response document is not available";
+        if (line < 1 || line > doc.LineCount)
+            return $"line {line} is outside the response body (1..{doc.LineCount})";
+
+        UpdateLayout();
+        var viewportH = editor.TextArea.TextView.Bounds.Height;
+        editor.ScrollTo(line, 0, VisualYPosition.LineMiddle, viewportH / 2.0, 0.0);
+        UpdateLayout();
+        return null;
     }
 }

@@ -97,6 +97,30 @@ Invoke-WebRequest "$base/api/screenshot" -OutFile $png -UseBasicParsing
 
 Then Read the PNG so it renders in the conversation.
 
+**Optional `?path=<expr>` — scroll response body to a JSON node before the shot.**
+Use when the interesting field is off-screen in a long JSON response. The response
+pane is scrolled so the referenced node is vertically centered; if the doc is short
+enough to fit or the node is near an edge, scroll clamps at the top/bottom.
+Notation is picked by the first character:
+
+| Notation      | Prefix | Example                          |
+|---------------|--------|----------------------------------|
+| JSONPath      | `$`    | `$.data.items[0].id`             |
+| JSON Pointer  | `/`    | `/data/items/0/id`               |
+| Dotted        | (none) | `data.items[0].id`               |
+
+URL-encode `$`, `[`, `]`, `/`. Failure modes → **HTTP 400, no screenshot**, body
+`{"error": "..."}`:
+
+- path malformed (e.g. `$..foo`, unclosed `[`)
+- path does not resolve in the current response body (missing key, index out of range, wrong container type)
+- no response yet, response body empty, or response is an image
+
+```powershell
+$path = [uri]::EscapeDataString('$.data.items[0].id')
+Invoke-WebRequest "$base/api/screenshot?path=$path" -OutFile $png -UseBasicParsing
+```
+
 ### 5. Shut down
 
 ```powershell
@@ -124,7 +148,7 @@ spec. Summary:
 | `/api/state`       | PUT        | Overwrite request fields                   |
 | `/api/state`       | PATCH      | Merge request fields                       |
 | `/api/send`        | POST       | Fire (optional patch in body)              |
-| `/api/screenshot`  | GET        | PNG of the main window                     |
+| `/api/screenshot`  | GET        | PNG of the main window (optional `?path=` scrolls response) |
 | `/api/exit`        | POST       | Shut down                                  |
 
 ## Gotchas
