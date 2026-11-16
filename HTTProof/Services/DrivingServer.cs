@@ -10,6 +10,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using HTTProof.Models;
 using HTTProof.ViewModels;
 
 namespace HTTProof.Services;
@@ -110,7 +111,13 @@ public sealed class DrivingServer : IDisposable
                 case ("/api/screenshot", "GET"):
                     {
                         var pathQ = req.QueryString["path"];
-                        var (png, err) = await CaptureScreenshotAsync(pathQ);
+                        var tabQ = req.QueryString["tab"];
+                        if (!TryParseScreenshotTab(tabQ, pathQ, out var tab, out var tabErr))
+                        {
+                            await WriteError(ctx, 400, tabErr);
+                            return;
+                        }
+                        var (png, err) = await CaptureScreenshotAsync(tab, pathQ);
                         if (err is not null) { await WriteError(ctx, 400, err); return; }
                         await WriteBytes(ctx, 200, "image/png", png!);
                         return;
@@ -211,12 +218,49 @@ public sealed class DrivingServer : IDisposable
         ctx.Response.OutputStream.Close();
     }
 
-    private Task<(byte[]? Png, string? Error)> CaptureScreenshotAsync(string? path)
+    /// <summary>
+    /// Resolves the response tab to show. No `tab` means "leave the UI as it is", except
+    /// that `path` scrolls the body, so it implies the body tab.
+    /// </summary>
+    private static bool TryParseScreenshotTab(string? tabQ, string? path, out ResponseTab? tab, out string error)
+    {
+        tab = null;
+        error = "";
+        if (!string.IsNullOrEmpty(tabQ))
+        {
+            switch (tabQ.ToLowerInvariant())
+            {
+                case "body": tab = ResponseTab.Body; break;
+                case "headers": tab = ResponseTab.Headers; break;
+                default:
+                    error = $"invalid tab '{tabQ}': expected 'body' or 'headers'";
+                    return false;
+            }
+        }
+        if (!string.IsNullOrEmpty(path))
+        {
+            if (tab == ResponseTab.Headers)
+            {
+                error = "path scrolls the response body; it cannot be combined with tab=headers";
+                return false;
+            }
+            tab = ResponseTab.Body;
+        }
+        return true;
+    }
+
+    private Task<(byte[]? Png, string? Error)> CaptureScreenshotAsync(ResponseTab? tab, string? path)
         => Dispatcher.UIThread.InvokeAsync(() =>
         {
             var lifetime = Avalonia.Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
             var window = lifetime?.MainWindow as HTTProof.Views.MainWindow
                 ?? throw new InvalidOperationException("no window");
+
+            if (tab is { } t)
+            {
+                _vm.SelectedResponseTab = t;
+                window.UpdateLayout();
+            }
 
             if (!string.IsNullOrEmpty(path))
             {
@@ -328,12 +372,19 @@ public sealed class DrivingServer : IDisposable
             "in": "query",
             "required": false,
             "schema": { "type": "string" },
-            "description": "Optional path into the JSON response body. When supplied, the response pane is scrolled so that the referenced node is vertically centered in the visible area before the screenshot is captured. Three notations are accepted, disambiguated by the first character: JSONPath (leading '$', e.g. `$.data.items[0].id`), JSON Pointer per RFC 6901 (leading '/', e.g. `/data/items/0/id`), or dotted (default, e.g. `data.items[0].id`). If the path is malformed, does not resolve, or the current response is not scrollable JSON text, the request fails with HTTP 400 and no screenshot."
+            "description": "Optional path into the JSON response body. When supplied, the response pane is scrolled so that the referenced node is vertically centered in the visible area before the screenshot is captured. Three notations are accepted, disambiguated by the first character: JSONPath (leading '$', e.g. `$.data.items[0].id`), JSON Pointer per RFC 6901 (leading '/', e.g. `/data/items/0/id`), or dotted (default, e.g. `data.items[0].id`). If the path is malformed, does not resolve, or the current response is not scrollable JSON text, the request fails with HTTP 400 and no screenshot. Implies `tab=body`."
+          },
+          {
+            "name": "tab",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "enum": ["body", "headers"] },
+            "description": "Optional response tab to switch to before the screenshot is captured. `headers` shows the response headers (name and full value, wrapped). Omitted: the currently selected tab is kept (unless `path` is supplied, which selects `body`). The selection persists after the screenshot. Combining `tab=headers` with `path` fails with HTTP 400."
           }
         ],
         "responses": {
           "200": { "description": "PNG bytes", "content": { "image/png": {} } },
-          "400": { "description": "Path invalid or does not resolve in the current response body", "content": { "application/json": {} } }
+          "400": { "description": "Invalid tab, tab=headers combined with path, or path invalid / does not resolve in the current response body", "content": { "application/json": {} } }
         }
       }
     },

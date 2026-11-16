@@ -16,7 +16,7 @@ Stack: Avalonia + .NET 10, dark theme only, JSON syntax highlighting via Avaloni
 
 - Top bar: method dropdown, URL, Send / Cancel.
 - Left pane: tabs for Params, Headers, Auth, Body.
-- Right pane: status badge (colored by class), duration, byte count, content type, JSON-highlighted response body.
+- Right pane: status badge (colored by class), duration, byte count, content type; Body tab (JSON-highlighted) and Headers tab (name + full value, wrapped).
 
 ## Running
 
@@ -73,7 +73,7 @@ GET  /api/health            { "ok": true }
 GET  /api/state             full request + response state
 PUT  /api/state             patch request fields (partial JSON body)
 POST /api/send              send now (optional patch body); returns state DTO
-GET  /api/screenshot        PNG bytes of the main window
+GET  /api/screenshot        PNG bytes of the main window (?tab=body|headers, ?path=<json path>)
 POST /api/exit              close the app
 ```
 
@@ -121,4 +121,6 @@ Note: HttpListener requires POST requests to carry a `Content-Length` header —
    ```
    curl -o shot.png http://127.0.0.1:5959/api/screenshot
    ```
+
+   Add `?tab=headers` to show the response headers (e.g. a redirect's `Location`) instead of the body.
 

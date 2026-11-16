@@ -27,6 +27,9 @@
         <Style Selector="TextBlock.mono">
             <Setter Property="FontFamily" Value="Consolas, Cascadia Mono, JetBrains Mono, Menlo, monospace" />
         </Style>
+        <Style Selector="SelectableTextBlock.mono">
+            <Setter Property="FontFamily" Value="Consolas, Cascadia Mono, JetBrains Mono, Menlo, monospace" />
+        </Style>
         <Style Selector="TextBox.mono">
             <Setter Property="FontFamily" Value="Consolas, Cascadia Mono, JetBrains Mono, Menlo, monospace" />
         </Style>
@@ -330,27 +333,57 @@
                             </StackPanel>
                         </Border>
 
-                        <ae:TextEditor Name="ResponseEditor"
-                                       AttachedToVisualTree="OnResponseEditorAttached"
-                                       IsReadOnly="True"
-                                       ShowLineNumbers="True"
-                                       HorizontalScrollBarVisibility="Auto"
-                                       VerticalScrollBarVisibility="Auto"
-                                       FontSize="14"
-                                       Padding="8"
-                                       Background="Transparent"
-                                       Foreground="{DynamicResource TextStrongBrush}"
-                                       IsVisible="{Binding IsTextResponse}" />
+                        <TabControl Margin="8,8,8,0"
+                                    IsVisible="{Binding HasResponse}"
+                                    SelectedIndex="{Binding SelectedResponseTab, Converter={x:Static v:ResponseTabIndexConverter.Instance}}">
+                            <TabItem Header="Body">
+                                <Grid>
+                                    <ae:TextEditor Name="ResponseEditor"
+                                                   AttachedToVisualTree="OnResponseEditorAttached"
+                                                   IsReadOnly="True"
+                                                   ShowLineNumbers="True"
+                                                   HorizontalScrollBarVisibility="Auto"
+                                                   VerticalScrollBarVisibility="Auto"
+                                                   FontSize="14"
+                                                   Padding="8"
+                                                   Background="Transparent"
+                                                   Foreground="{DynamicResource TextStrongBrush}"
+                                                   IsVisible="{Binding IsTextResponse}" />
 
-                        <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                                      VerticalScrollBarVisibility="Auto"
-                                      Padding="8"
-                                      IsVisible="{Binding IsImageResponse}">
-                            <Image Source="{Binding ResponseImage}"
-                                   Stretch="None"
-                                   HorizontalAlignment="Left"
-                                   VerticalAlignment="Top" />
-                        </ScrollViewer>
+                                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  Padding="8"
+                                                  IsVisible="{Binding IsImageResponse}">
+                                        <Image Source="{Binding ResponseImage}"
+                                               Stretch="None"
+                                               HorizontalAlignment="Left"
+                                               VerticalAlignment="Top" />
+                                    </ScrollViewer>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="{Binding ResponseHeadersTabLabel}">
+                                <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                                              VerticalScrollBarVisibility="Auto"
+                                              Padding="4,0,8,8">
+                                    <ItemsControl ItemsSource="{Binding ResponseHeaderLines}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="m:HeaderLine">
+                                                <Grid ColumnDefinitions="200,*" ColumnSpacing="12" Margin="0,4">
+                                                    <SelectableTextBlock Grid.Column="0" Text="{Binding Name}"
+                                                                         Classes="mono" FontSize="13"
+                                                                         TextWrapping="Wrap"
+                                                                         Foreground="{DynamicResource TextMutedBrush}" />
+                                                    <SelectableTextBlock Grid.Column="1" Text="{Binding Value}"
+                                                                         Classes="mono" FontSize="13"
+                                                                         TextWrapping="Wrap"
+                                                                         Foreground="{DynamicResource TextStrongBrush}" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </TabItem>
+                        </TabControl>
                     </Grid>
                 </Grid>
             </Border>

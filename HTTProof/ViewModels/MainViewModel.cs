@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
@@ -82,6 +83,18 @@ public partial class MainViewModel : ViewModelBase
 
     [ObservableProperty]
     public partial IReadOnlyDictionary<string, string> ResponseHeaders { get; set; } = new Dictionary<string, string>();
+
+    public IReadOnlyList<HeaderLine> ResponseHeaderLines => ResponseHeaders.Select(h => new HeaderLine(h.Key, h.Value)).ToList();
+    public string ResponseHeadersTabLabel => $"Headers ({ResponseHeaders.Count})";
+
+    partial void OnResponseHeadersChanged(IReadOnlyDictionary<string, string> value)
+    {
+        OnPropertyChanged(nameof(ResponseHeaderLines));
+        OnPropertyChanged(nameof(ResponseHeadersTabLabel));
+    }
+
+    [ObservableProperty]
+    public partial ResponseTab SelectedResponseTab { get; set; } = ResponseTab.Body;
 
     [ObservableProperty]
     public partial string? ErrorMessage { get; set; }

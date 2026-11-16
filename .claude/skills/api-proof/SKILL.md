@@ -121,6 +121,16 @@ $path = [uri]::EscapeDataString('$.data.items[0].id')
 Invoke-WebRequest "$base/api/screenshot?path=$path" -OutFile $png -UseBasicParsing
 ```
 
+**Optional `?tab=body|headers` - pick the response tab before the shot.**
+Use `tab=headers` when the evidence is in a header (a 302's `Location`, `Set-Cookie`,
+`WWW-Authenticate`): it shows every header with its full value wrapped. Omitted, the
+current tab is kept; `path` implies `body`. HTTP 400 for an unknown tab or for
+`tab=headers` combined with `path`.
+
+```powershell
+Invoke-WebRequest "$base/api/screenshot?tab=headers" -OutFile $png -UseBasicParsing
+```
+
 ### 5. Shut down
 
 ```powershell
@@ -148,7 +158,7 @@ spec. Summary:
 | `/api/state`       | PUT        | Overwrite request fields                   |
 | `/api/state`       | PATCH      | Merge request fields                       |
 | `/api/send`        | POST       | Fire (optional patch in body)              |
-| `/api/screenshot`  | GET        | PNG of the main window (optional `?path=` scrolls response) |
+| `/api/screenshot`  | GET        | PNG of the main window (optional `?tab=body\|headers`, `?path=` scrolls response) |
 | `/api/exit`        | POST       | Shut down                                  |
 
 ## Gotchas

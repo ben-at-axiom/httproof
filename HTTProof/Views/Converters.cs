@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using Avalonia.Data;
 using Avalonia.Data.Converters;
 using HTTProof.Models;
 
@@ -41,6 +42,15 @@ public static class EqualityConverters
     public static readonly IValueConverter IsBasic = new FuncValueConverter<AuthKind, bool>(a => a == AuthKind.Basic);
     public static readonly IValueConverter NotNone = new FuncValueConverter<AuthKind, bool>(a => a != AuthKind.None);
     public static readonly IValueConverter BodyNotNone = new FuncValueConverter<BodyKind, bool>(b => b != BodyKind.None);
+}
+
+public sealed class ResponseTabIndexConverter : IValueConverter
+{
+    public static readonly ResponseTabIndexConverter Instance = new();
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => value is ResponseTab t ? (int)t : 0;
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => value is int i && Enum.IsDefined(typeof(ResponseTab), i) ? (ResponseTab)i : BindingOperations.DoNothing;
 }
 
 public sealed class AuthSecretLabelConverter : IValueConverter
